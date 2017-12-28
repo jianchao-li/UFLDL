@@ -13,7 +13,7 @@ for l = 1 : numel(ei.layer_sizes)
         prev_size = ei.layer_sizes(l-1);
     else
         prev_size = ei.input_dim;
-    end;
+    end
     cur_size = ei.layer_sizes(l);
     % Xaxier's scaling factor
     s = sqrt(6) / sqrt(prev_size + cur_size);
