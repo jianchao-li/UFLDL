@@ -30,12 +30,7 @@ for i =1:length(numgrad)
     theta(i)=oldT;
     if mod(i,100)==0
        fprintf('Done with %d\n',i);
-    end;
-end;
-
-
-
-
-
+    end
+end
 %% ---------------------------------------------------------------
 end

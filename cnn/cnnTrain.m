@@ -5,7 +5,7 @@
 % 
 %  This file contains code that helps you get started in building a single.
 %  layer convolutional nerual network. In this exercise, you will only
-%  need to modify cnnCost.m and cnnminFuncSGD.m. You will not need to 
+%  need to modify cnnCost.m and minFuncSGD.m. You will not need to 
 %  modify this file.
 
 %%======================================================================
@@ -21,9 +21,9 @@ poolDim = 2;      % Pooling dimension, (should divide imageDim-filterDim+1)
 
 % Load MNIST Train
 addpath ../common/;
-images = loadMNISTImages('../common/train-images-idx3-ubyte');
+images = loadMNISTImages('../common/common/train-images-idx3-ubyte');
 images = reshape(images,imageDim,imageDim,[]);
-labels = loadMNISTLabels('../common/train-labels-idx1-ubyte');
+labels = loadMNISTLabels('../common/common/train-labels-idx1-ubyte');
 labels(labels==0) = 10; % Remap 0 to 10
 
 % Initialize Parameters
@@ -39,7 +39,7 @@ theta = cnnInitParams(imageDim,filterDim,numFilters,poolDim,numClasses);
 %  calculation for your cnnCost.m function.  You may need to add the
 %  appropriate path or copy the file to this directory.
 
-DEBUG=false;  % set this to true to check gradient
+DEBUG=true;  % set this to true to check gradient
 if DEBUG
     % To speed up gradient checking, we will use a reduced network and
     % a debugging data set
@@ -51,7 +51,7 @@ if DEBUG
     db_theta = cnnInitParams(imageDim,db_filterDim,db_numFilters,...
                 db_poolDim,numClasses);
     
-    [cost grad] = cnnCost(db_theta,db_images,db_labels,numClasses,...
+    [~, grad] = cnnCost(db_theta,db_images,db_labels,numClasses,...
                                 db_filterDim,db_numFilters,db_poolDim);
     
 
@@ -71,7 +71,7 @@ if DEBUG
     assert(diff < 1e-9,...
         'Difference too large. Check your gradient computation again');
     
-end;
+end
 
 %%======================================================================
 %% STEP 3: Learn Parameters
@@ -90,9 +90,9 @@ opttheta = minFuncSGD(@(x,y,z) cnnCost(x,y,z,numClasses,filterDim,...
 %  Test the performance of the trained model using the MNIST test set. Your
 %  accuracy should be above 97% after 3 epochs of training
 
-testImages = loadMNISTImages('../common/t10k-images-idx3-ubyte');
+testImages = loadMNISTImages('../common/common/t10k-images-idx3-ubyte');
 testImages = reshape(testImages,imageDim,imageDim,[]);
-testLabels = loadMNISTLabels('../common/t10k-labels-idx1-ubyte');
+testLabels = loadMNISTLabels('../common/common/t10k-labels-idx1-ubyte');
 testLabels(testLabels==0) = 10; % Remap 0 to 10
 
 [~,cost,preds]=cnnCost(opttheta,testImages,testLabels,numClasses,...

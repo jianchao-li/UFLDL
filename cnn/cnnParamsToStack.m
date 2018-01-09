@@ -5,7 +5,7 @@ function [Wc, Wd, bc, bd] = cnnParamsToStack(theta,imageDim,filterDim,...
 % tensors/matrices and corresponding biases
 %                            
 % Parameters:
-%  theta      -  unrolled parameter vectore
+%  theta      -  unrolled parameter vector
 %  imageDim   -  height/width of image
 %  filterDim  -  dimension of convolutional filter                            
 %  numFilters -  number of convolutional filters

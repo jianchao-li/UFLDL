@@ -24,7 +24,7 @@ function [cost, grad, preds] = cnnCost(theta,images,labels,numClasses,...
 
 if ~exist('pred','var')
     pred = false;
-end;
+end
 
 
 imageDim = size(images,1); % height/width of image
@@ -72,6 +72,8 @@ activations = zeros(convDim,convDim,numFilters,numImages);
 activationsPooled = zeros(outputDim,outputDim,numFilters,numImages);
 
 %%% YOUR CODE HERE %%%
+activations = cnnConvolve(filterDim, numFilters, images, Wc, bc);
+activationsPooled = cnnPool(poolDim, activations);
 
 % Reshape activations into 2-d matrix, hiddenSize x numImages,
 % for Softmax layer
@@ -88,6 +90,8 @@ activationsPooled = reshape(activationsPooled,[],numImages);
 probs = zeros(numClasses,numImages);
 
 %%% YOUR CODE HERE %%%
+z = exp(Wd * activationsPooled + bd);
+probs = bsxfun(@rdivide, z, sum(z));
 
 %%======================================================================
 %% STEP 1b: Calculate Cost
@@ -98,6 +102,9 @@ probs = zeros(numClasses,numImages);
 cost = 0; % save objective into cost
 
 %%% YOUR CODE HERE %%%
+logs = log(probs');
+inds = sub2ind(size(logs), 1 : size(logs, 1), labels');
+cost = -1 / numImages * sum(logs(inds));
 
 % Makes predictions given probs and returns without backproagating errors.
 if pred
@@ -105,7 +112,7 @@ if pred
     preds = preds';
     grad = 0;
     return;
-end;
+end
 
 %%======================================================================
 %% STEP 1c: Backpropagation
@@ -118,6 +125,15 @@ end;
 %  quickly.
 
 %%% YOUR CODE HERE %%%
+delta_softmax = -full(sparse(labels, 1 : size(labels, 1), 1) - probs);
+delta_pool = reshape(Wd' * delta_softmax, outputDim, outputDim, numFilters, numImages);
+delta_conv = zeros(convDim, convDim, numFilters, numImages);
+for i = 1 : numFilters
+    for j = 1 : numImages
+        delta_conv(:, :, i, j) = 1 / (poolDim ^ 2) * kron(delta_pool(:, :, i, j), ones(poolDim));
+    end
+end
+delta = delta_conv .* activations .* (1 - activations);
 
 %%======================================================================
 %% STEP 1d: Gradient Calculation
@@ -128,6 +144,14 @@ end;
 %  for that filter with each image and aggregate over images.
 
 %%% YOUR CODE HERE %%%
+Wd_grad = 1 / numImages * delta_softmax * activationsPooled';
+bd_grad = 1 / numImages * sum(delta_softmax, 2);
+for i = 1 : numFilters
+    for j = 1 : numImages
+        Wc_grad(:, :, i) = Wc_grad(:, :, i) + conv2(images(:, :, j), rot90(delta(:, :, i, j), 2), 'valid') / numImages;
+    end
+    bc_grad(i) = 1 / numImages * sum(sum(sum(delta(:, :, i, :))));
+end
 
 %% Unroll gradient into grad vector for minFunc
 grad = [Wc_grad(:) ; Wd_grad(:) ; bc_grad(:) ; bd_grad(:)];
