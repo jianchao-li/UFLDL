@@ -15,4 +15,4 @@ end
 
 grad = bsxfunwrap(@rdivide, outderv, l2rows) - ...
        bsxfunwrap(@times, y, sum(outderv.*x, 2) ./ epssumsq);
-
+end

@@ -1,4 +1,3 @@
-
 function c = bsxfunwrap(func, a, b)
 
 global usegpu;

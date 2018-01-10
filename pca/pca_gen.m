@@ -26,7 +26,7 @@ x = x - repmat(avg, size(x, 1), 1);
 
 %%% YOUR CODE HERE %%%
 sigma = x * x' / size(x, 2);
-[U, S, V] = svd(sigma);
+[U, S, ~] = svd(sigma);
 xRot = U' * x;
 
 %%================================================================

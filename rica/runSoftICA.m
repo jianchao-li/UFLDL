@@ -13,7 +13,7 @@ params.numFeatures = 50; % number of filter banks to learn
 params.epsilon = 1e-2; % epsilon to use in square-sqrt nonlinearity
 
 % Load MNIST data set
-data = loadMNISTImages('../common/train-images-idx3-ubyte');
+data = loadMNISTImages('../common/common/train-images-idx3-ubyte');
 
 %% Preprocessing
 % Our strategy is as follows:
