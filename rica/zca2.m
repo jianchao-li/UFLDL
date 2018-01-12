@@ -1,4 +1,4 @@
-function [Z] = zca2(x)
+function [Z, V] = zca2(x)
 epsilon = 1e-4;
 % You should be able to use the code from your PCA/ZCA exercise
 % Retain all of the components from the ZCA transform (i.e. do not do
@@ -11,7 +11,7 @@ epsilon = 1e-4;
 avg = mean(x, 1);
 x = x - repmat(avg, size(x, 1), 1);
 sigma = x * x' / size(x, 2);
-[U, S, ~] = svd(sigma);
+[U, S, V] = svd(sigma);
 xRot = U' * x;
 xPCAWhite = diag(1 ./ sqrt(diag(S) + epsilon)) * xRot;
 Z = U * xPCAWhite;

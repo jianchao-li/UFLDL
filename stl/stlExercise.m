@@ -4,9 +4,9 @@
 %  ------------
 % 
 %  This file contains code that helps you get started on the
-%  self-taught learning. You will need to complete code in feedForwardAutoencoder.m
-%  You will also need to have implemented sparseAutoencoderCost.m and 
-%  softmaxCost.m from previous exercises.
+%  self-taught learning. You will need to complete code in feedForwardRICA.m
+%  You will also need to have implemented softICACost.m and 
+%  softmax_regression_vec.m from previous exercises.
 %
 %% ======================================================================
 %  STEP 0: Here we provide the relevant parameters values that will
@@ -29,8 +29,8 @@ params.epsilon = 1e-2;
 %  change it.
 
 % Load MNIST database files
-mnistData   = loadMNISTImages('../common/train-images-idx3-ubyte');
-mnistLabels = loadMNISTLabels('../common/train-labels-idx1-ubyte');
+mnistData   = loadMNISTImages('../common/common/train-images-idx3-ubyte');
+mnistLabels = loadMNISTLabels('../common/common/train-labels-idx1-ubyte');
 
 numExamples = size(mnistData, 2);
 % 50000 of the data are pretended to be unlabelled
@@ -79,13 +79,18 @@ patches = samplePatches([unlabeledData,trainData],params.patchWidth,200000);
 options.Method = 'lbfgs';
 options.MaxFunEvals = Inf;
 options.MaxIter = 1000;
+options.useMex = 0;
 % You'll need to replace this line with RICA training code
-opttheta = randTheta;
+% opttheta = randTheta;
 
 %  Find opttheta by running the RICA on all the training patches.
 %  You will need to whitened the patches with the zca2 function 
 %  then call minFunc with the softICACost function as seen in the RICA exercise.
 %%% YOUR CODE HERE %%%
+[patches, V] = zca2(patches);
+m = sqrt(sum(patches .^ 2) + 1e-8);
+x = bsxfunwrap(@rdivide, patches, m);
+opttheta = minFunc(@(theta) softICACost(theta, x, params), randTheta, options);
 
 % reshape visualize weights
 W = reshape(opttheta, params.numFeatures, params.n);
@@ -121,7 +126,7 @@ testFeatures = reshape(testAct, featureSize, size(testData, 2));
 
 numClasses  = 5; % doing 5-class digit recognition
 % initialize softmax weights randomly
-randTheta2 = randn(numClasses, featureSize)*0.01;  % 1/sqrt(params.n);
+randTheta2 = randn(numClasses - 1, featureSize + 1)*0.01;  % 1/sqrt(params.n);
 randTheta2 = randTheta2 ./ repmat(sqrt(sum(randTheta2.^2,2)), 1, size(randTheta2,2)); 
 randTheta2 = randTheta2';
 randTheta2 = randTheta2(:);
@@ -134,16 +139,22 @@ options.MaxIter = 300;
 
 % optimize
 %%% YOUR CODE HERE %%%
-
+trainFeatures = [ones(1, size(trainFeatures, 2)); trainFeatures];
+testFeatures = [ones(1, size(testFeatures, 2)); testFeatures];
+opttheta2 = minFunc(@softmax_regression_vec, randTheta2, options, trainFeatures, trainLabels);
+opttheta2 = reshape(opttheta2, featureSize + 1, []);
+opttheta2 = [opttheta2, zeros(size(opttheta2, 1), 1)];
+[~, train_pred] = max(opttheta2' * trainFeatures);
+[~, test_pred] = max(opttheta2' * testFeatures);
 
 %%======================================================================
 %% STEP 5: Testing 
-% Compute Predictions on tran and test sets using softmaxPredict
+% Compute Predictions on train and test sets using softmaxPredict
 % and softmaxModel
 %%% YOUR CODE HERE %%%
 % Classification Score
 fprintf('Train Accuracy: %f%%\n', 100*mean(train_pred(:) == trainLabels(:)));
-fprintf('Test Accuracy: %f%%\n', 100*mean(pred(:) == testLabels(:)));
+fprintf('Test Accuracy: %f%%\n', 100*mean(test_pred(:) == testLabels(:)));
 % You should get 100% train accuracy and ~99% test accuracy. With random
 % convolutional weights we get 97.5% test accuracy. Actual results may
 % vary as a result of random initializations
